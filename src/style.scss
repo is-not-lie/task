@@ -1,0 +1,34 @@
+@import '~antd/dist/antd.css';
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+body {
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    .app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p {
+      margin: 0;
+    }
+  }
+}

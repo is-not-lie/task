@@ -1,10 +1,47 @@
-import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  FC,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { Button, notification } from 'antd';
+import { v4 } from 'uuid';
 import FormController, { FormItem } from './Form';
-import { Button, notification, Space } from 'antd';
+import { TodoContext } from './index';
 
 export default (() => {
+  const { addTodo, exchangeRateComp, fetchExchangeRete } =
+    useContext(TodoContext);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const formContrRef = useRef<React.ElementRef<typeof FormController>>(null);
+
+  const generateTodo = useCallback((formData: Record<string, any>) => {
+    const { task, price, currency } = formData;
+    return {
+      id: v4().split('-').join(''),
+      title: task,
+      currency,
+      price,
+      done: false,
+    } as const;
+  }, []);
+
+  const handleAddTask = useCallback(async () => {
+    try {
+      setConfirmLoading(true);
+      const validateRes = await formContrRef.current?.validate();
+      addTodo(generateTodo(validateRes!));
+      formContrRef.current?.clear();
+    } catch (error) {
+      notification.error({
+        message: '表单校验失败, 请检查必填项是否填写完整!',
+      });
+    } finally {
+      setConfirmLoading(false);
+    }
+  }, [addTodo, generateTodo]);
 
   const formItems = useMemo((): FormItem[] => {
     return [
@@ -34,33 +71,36 @@ export default (() => {
             { key: 'CNY', label: '人民币', value: 'CNY' },
             { key: 'USD', label: '美元', value: 'USD' },
           ],
-          onChange(value, option) {},
+          onChange(value) {
+            fetchExchangeRete(value);
+          },
+        },
+      },
+      {
+        type: 'custom',
+        render() {
+          return (
+            <Button
+              loading={confirmLoading}
+              type="primary"
+              onClick={handleAddTask}
+            >
+              添加
+            </Button>
+          );
         },
       },
     ];
-  }, []);
-
-  const handleAddTask = useCallback(async () => {
-    try {
-      setConfirmLoading(true);
-      const validateRes = await formContrRef.current?.validate();
-    } catch (error) {
-      notification.error({
-        message: '表单校验失败, 请检查必填项是否填写完整!',
-      });
-    } finally {
-      setConfirmLoading(false);
-    }
-  }, []);
+  }, [fetchExchangeRete, confirmLoading, handleAddTask]);
 
   return (
     <div>
-      <Space>
-        <FormController formItems={formItems} ref={formContrRef} />
-        <Button loading={confirmLoading} type="primary" onClick={handleAddTask}>
-          添加
-        </Button>
-      </Space>
+      <FormController
+        formItems={formItems}
+        ref={formContrRef}
+        defaultLayout={{ col: 6, labelCol: 12, wrapperCol: 12 }}
+      />
+      {exchangeRateComp}
     </div>
   );
 }) as FC;
