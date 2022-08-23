@@ -1,31 +1,33 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
-import useExchangeRate, { CURRENCY_ENUM } from '../hooks';
-import TodoHeader from './Header';
-import TodoList from './List';
+import { CURRENCY_ENUM } from '../configs';
+import useExchangeRate from '../hooks';
+import TodoHeader from './TodoHeader';
+import TodoList from './TodoList';
+import './style.scss';
 
 export const TodoContext = React.createContext<ITodoContext>({
   todoList: [],
+  isFetching: false,
   doneTodoList: [],
+  exchangeRateData: {},
   addTodo() {},
   removeTodo() {},
   changeTodoStatus() {},
   fetchExchangeRete() {},
-  exchangeRateComp: <></>,
-  exchangeRateData: {},
 });
 
 interface ITodoContext {
   todoList: TodoItem[];
+  isFetching: boolean;
   doneTodoList: TodoItem[];
-  addTodo(todo: TodoItem): void;
-  removeTodo(id: string): void;
-  changeTodoStatus(id: string, isDone: boolean): void;
-  fetchExchangeRete(currency: keyof typeof CURRENCY_ENUM): void;
-  exchangeRateComp: React.ReactElement;
   exchangeRateData: {
     current?: keyof typeof CURRENCY_ENUM;
     rates?: { [key in keyof typeof CURRENCY_ENUM]?: number };
   };
+  addTodo(todo: TodoItem): void;
+  removeTodo(id: string): void;
+  changeTodoStatus(id: string, isDone: boolean): void;
+  fetchExchangeRete(currency: keyof typeof CURRENCY_ENUM): void;
 }
 
 interface TodoItem {
@@ -37,8 +39,7 @@ interface TodoItem {
 }
 
 export default (() => {
-  const { fetchExchangeRete, exchangeRateComp, exchangeRateData } =
-    useExchangeRate();
+  const { fetchExchangeRete, isFetching, exchangeRateData } = useExchangeRate();
   const [todoList, setTodoList] = useState<TodoItem[]>([]);
   const [doneTodoList, setDoneTodoList] = useState<TodoItem[]>([]);
   const todoListRef = useRef(todoList);
@@ -85,12 +86,12 @@ export default (() => {
   }, [doneTodoList]);
 
   return (
-    <div>
+    <div className="todo-wrapper">
       <TodoContext.Provider
         value={{
           todoList,
           doneTodoList,
-          exchangeRateComp,
+          isFetching,
           exchangeRateData,
           addTodo,
           removeTodo,

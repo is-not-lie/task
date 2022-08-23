@@ -45,8 +45,8 @@ const FormController: ForwardRefRenderFunction<
     validate() {
       return form.validateFields();
     },
-    clear() {
-      form.resetFields();
+    clear(fields) {
+      form.resetFields(fields);
     },
   }));
 
@@ -122,7 +122,7 @@ export type FormItem =
   | SelectFormItem
   | CustomFormItem;
 
-interface FormControllerProps
+export interface FormControllerProps
   extends Omit<FormProps, 'form' | 'wrapperCol' | 'labelCol'> {
   defaultLayout?: Layout;
   formItems: FormItem[];
@@ -130,7 +130,7 @@ interface FormControllerProps
 
 interface FormControllerRef {
   validate(): Promise<Record<string, any>>;
-  clear(): void;
+  clear(fields?: string[]): void;
 }
 
 export default forwardRef(FormController);

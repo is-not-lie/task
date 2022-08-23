@@ -1,78 +1,14 @@
-import { Checkbox, List, notification, Space, Typography } from 'antd';
-import { FC, useCallback, useContext, useMemo } from 'react';
+import { List, notification, Space } from 'antd';
+import { FC, useCallback, useContext } from 'react';
 import Big from 'big.js';
-import { TodoContext } from './index';
-import { SYMBOL_MAP } from '../hooks';
-import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import { pick } from 'lodash';
-
-const TodoItem: FC<TodoItemProps> = (props) => {
-  const {
-    id,
-    done,
-    title,
-    price,
-    transformPrice1,
-    transformPrice2,
-    checkable = true,
-    onChange,
-  } = props;
-
-  const handleCheckedChange = useCallback(
-    (event: CheckboxChangeEvent) => {
-      const isChecked = event.target.checked;
-      onChange?.(id!, isChecked);
-    },
-    [id, onChange]
-  );
-
-  return (
-    <div>
-      <div>
-        {checkable && (
-          <Checkbox checked={done} onChange={handleCheckedChange} />
-        )}
-        <span>{title}</span>
-      </div>
-      <div>
-        <span>{price}</span>
-        <span>{transformPrice1}</span>
-        <span>{transformPrice2}</span>
-      </div>
-    </div>
-  );
-};
-
-interface BaseTodoItemProps {
-  id?: string;
-  done?: boolean;
-  title: string;
-  price: string;
-  transformPrice1: string;
-  transformPrice2: string;
-  onChange?(id: string, status: boolean): void;
-}
-
-interface UnCheckableTodoItemProps extends BaseTodoItemProps {
-  checkable: false;
-}
-
-interface CheckableTodoItemProps extends BaseTodoItemProps {
-  id: string;
-  done: boolean;
-  checkable?: true;
-}
-
-type TodoItemProps = UnCheckableTodoItemProps | CheckableTodoItemProps;
+import { TodoContext } from './index';
+import { SYMBOL_MAP } from '../configs';
+import TodoItem from './TodoItem';
 
 export default (() => {
-  const {
-    todoList,
-    doneTodoList,
-    exchangeRateData,
-    removeTodo,
-    changeTodoStatus,
-  } = useContext(TodoContext);
+  const { todoList, doneTodoList, exchangeRateData, changeTodoStatus } =
+    useContext(TodoContext);
 
   const computeTransformPrice = useCallback(
     (price: number) => {
@@ -126,7 +62,7 @@ export default (() => {
   );
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }}>
+    <Space direction="vertical" className="todo-list-container">
       <List
         header={<div>计划:</div>}
         footer={generateFooter(todoList, '将要花费:')}

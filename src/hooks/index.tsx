@@ -1,19 +1,6 @@
-import { Spin } from 'antd';
+import { useCallback, useState } from 'react';
 import axios from 'axios';
-import { useCallback, useMemo, useState } from 'react';
-import './style.scss';
-
-export const CURRENCY_ENUM = {
-  USD: ['CNY', 'RUB'],
-  CNY: ['RUB', 'USD'],
-  RUB: ['CNY', 'USD'],
-} as const;
-
-export const SYMBOL_MAP = {
-  USD: '$',
-  CNY: '¥',
-  RUB: '₽',
-} as const;
+import { CURRENCY_ENUM } from '../configs';
 
 async function fetchExchangeRete(currency: keyof typeof CURRENCY_ENUM) {
   return axios({
@@ -71,33 +58,10 @@ const useExchangeRate = () => {
     [parserExchangeRate]
   );
 
-  const exchangeRateComp = useMemo(() => {
-    const { rates, current } = exchangeRateData;
-    if (!rates) return null;
-    const baseSymbol = SYMBOL_MAP[current!];
-    return Object.keys(rates).map((s) => {
-      const key = s as keyof typeof rates;
-      const rate = rates[key];
-      return (
-        <span>
-          {rate} {baseSymbol}/{SYMBOL_MAP[key]}
-        </span>
-      );
-    });
-  }, [exchangeRateData]);
-
-  const withLoadingComponent = useMemo(() => {
-    return (
-      <p className="exchange-rate-container">
-        {isFetching ? <Spin spinning /> : exchangeRateComp}
-      </p>
-    );
-  }, [isFetching, exchangeRateComp]);
-
   return {
     exchangeRateData,
     fetchExchangeRete: fetchData,
-    exchangeRateComp: withLoadingComponent,
+    isFetching,
   };
 };
 
