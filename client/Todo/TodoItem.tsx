@@ -1,3 +1,4 @@
+import React from 'react';
 import { Checkbox } from 'antd';
 import { FC, useCallback } from 'react';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
@@ -17,14 +18,14 @@ export default ((props) => {
   const handleCheckedChange = useCallback(
     (event: CheckboxChangeEvent) => {
       const isChecked = event.target.checked;
-      onChange?.(id!, isChecked);
+      onChange?.(id!, isChecked ? 'done' : 'pendding');
     },
     [id, onChange]
   );
 
   return (
     <div className="todo-item-container">
-      <div>
+      <div className="todo-item-title-container">
         {checkable && (
           <Checkbox checked={done} onChange={handleCheckedChange} />
         )}
@@ -46,7 +47,7 @@ interface BaseTodoItemProps {
   price: string;
   transformPrice1: string;
   transformPrice2: string;
-  onChange?(id: string, status: boolean): void;
+  onChange?(id: string, status: 'done' | 'pendding'): void;
 }
 
 interface UnCheckableTodoItemProps extends BaseTodoItemProps {
@@ -59,4 +60,4 @@ interface CheckableTodoItemProps extends BaseTodoItemProps {
   checkable?: true;
 }
 
-type TodoItemProps = UnCheckableTodoItemProps | CheckableTodoItemProps;
+export type TodoItemProps = UnCheckableTodoItemProps | CheckableTodoItemProps;

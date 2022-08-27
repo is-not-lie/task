@@ -1,39 +1,23 @@
-import React, {
-  FC,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { Button, notification, Spin } from 'antd';
-import { v4 } from 'uuid';
+import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
+import { Button, notification } from 'antd';
 import FormController, { FormItem } from '../components/Form';
-import { TodoContext } from './index';
-import { CURRENCY_OPTIONS, SYMBOL_MAP } from '../configs';
+import { CURRENCY_OPTIONS } from '../configs';
+import type { Currency, TodoHeaderFormData } from '../typings/Todo';
 
-export default (() => {
-  const { isFetching, exchangeRateData, addTodo, fetchExchangeRete } =
-    useContext(TodoContext);
+export default ((props) => {
+  const { onAdd, onCurrencyChange } = props;
   const [confirmLoading, setConfirmLoading] = useState(false);
   const formContrRef = useRef<React.ElementRef<typeof FormController>>(null);
-
-  const generateTodo = useCallback((formData: Record<string, any>) => {
-    const { task, price, currency } = formData;
-    return {
-      id: v4().split('-').join(''),
-      title: task,
-      currency,
-      price,
-      done: false,
-    } as const;
-  }, []);
 
   const handleAddTask = useCallback(async () => {
     try {
       setConfirmLoading(true);
-      const validateRes = await formContrRef.current?.validate();
-      addTodo(generateTodo(validateRes!));
+      const validateRes = await formContrRef.current?.validate()!;
+      onAdd?.({
+        title: validateRes.task,
+        price: validateRes.price,
+        currency: validateRes.currency,
+      });
       formContrRef.current?.clear(['task', 'price']);
     } catch (error) {
       notification.error({
@@ -42,7 +26,7 @@ export default (() => {
     } finally {
       setConfirmLoading(false);
     }
-  }, [addTodo, generateTodo]);
+  }, [onAdd]);
 
   const formItems = useMemo((): FormItem[] => {
     return [
@@ -53,6 +37,7 @@ export default (() => {
         required: true,
         layout: { col: 10, labelCol: 4, wrapperCol: 18 },
         rules: [{ required: true, message: '必填项' }],
+        configs: {},
       },
       {
         key: 'price',
@@ -61,6 +46,7 @@ export default (() => {
         layout: { col: 4, labelCol: 10, wrapperCol: 14 },
         required: true,
         rules: [{ required: true, message: '必填项' }],
+        configs: {},
       },
       {
         key: 'currency',
@@ -71,8 +57,8 @@ export default (() => {
         rules: [{ required: true, message: '必填项' }],
         configs: {
           options: CURRENCY_OPTIONS,
-          onChange(value) {
-            fetchExchangeRete(value);
+          onChange: (value) => {
+            onCurrencyChange?.(value);
           },
         },
       },
@@ -92,30 +78,7 @@ export default (() => {
         },
       },
     ];
-  }, [fetchExchangeRete, confirmLoading, handleAddTask]);
-
-  const exchangeRateComp = useMemo(() => {
-    const { rates, current } = exchangeRateData;
-    if (!rates) return null;
-    const baseSymbol = SYMBOL_MAP[current!];
-    return Object.keys(rates).map((s) => {
-      const key = s as keyof typeof rates;
-      const rate = rates[key];
-      return (
-        <span>
-          {rate} {baseSymbol}/{SYMBOL_MAP[key]}
-        </span>
-      );
-    });
-  }, [exchangeRateData]);
-
-  const withLoadingComponent = useMemo(() => {
-    return (
-      <p className="exchange-rate-container">
-        {isFetching ? <Spin spinning /> : exchangeRateComp}
-      </p>
-    );
-  }, [isFetching, exchangeRateComp]);
+  }, [confirmLoading, handleAddTask, onCurrencyChange]);
 
   return (
     <div>
@@ -124,7 +87,12 @@ export default (() => {
         ref={formContrRef}
         defaultLayout={{ col: 6, labelCol: 12, wrapperCol: 12 }}
       />
-      {withLoadingComponent}
+      {props.children}
     </div>
   );
-}) as FC;
+}) as FC<TodoHeaderProps>;
+
+interface TodoHeaderProps extends React.PropsWithChildren {
+  onAdd?(data: TodoHeaderFormData): void;
+  onCurrencyChange?(value: Currency): void;
+}

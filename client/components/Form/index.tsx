@@ -61,7 +61,7 @@ const FormController: ForwardRefRenderFunction<
             wrapperCol = 18,
           } = Object.assign({}, defaultLayout ?? {}, layout ?? {});
           return (
-            <Col span={col}>
+            <Col span={col} key={`${key}${label}`}>
               <Form.Item
                 key={key}
                 name={key}

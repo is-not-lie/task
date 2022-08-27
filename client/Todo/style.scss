@@ -1,0 +1,44 @@
+$padding-default: 14px;
+$padding-small: 6px;
+
+@mixin ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.todo-wrapper {
+  width: 60%;
+  .todo-list-container {
+    width: 100%;
+    .todo-item-container {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .todo-item-title-container {
+        flex: 3;
+        .todo-item-title {
+          padding-left: $padding-default;
+          @include ellipsis();
+        }
+      }
+      .todo-price-container {
+        flex: 2;
+        display: flex;
+        span {
+          flex: 1;
+          padding: 0 $padding-small;
+          @include ellipsis();
+        }
+      }
+    }
+  }
+}
+
+.exchange-rate-container {
+  text-align: right;
+  span {
+    padding: 0px 12px;
+  }
+}

@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react';
 import axios from 'axios';
 import { CURRENCY_ENUM } from '../configs';
+import type { Currency, Todo } from '../typings/Todo';
 
-async function fetchExchangeRete(currency: keyof typeof CURRENCY_ENUM) {
+async function fetchExchangeRete(currency: Currency) {
   return axios({
-    url: '/apis/latest',
+    url: '/common/proxy/latest',
     method: 'get',
     params: {
       base: currency,
@@ -16,25 +17,26 @@ async function fetchExchangeRete(currency: keyof typeof CURRENCY_ENUM) {
 const useExchangeRate = () => {
   const [isFetching, setIsFetching] = useState(false);
   const [exchangeRateData, setExchangeRateData] = useState<{
-    current?: ExchangeRateData['base'];
-    rates?: ExchangeRateData['rates'];
-  }>({});
+    currency: Currency;
+    exchangeRate: Todo['exchangeRate'];
+  } | null>(null);
 
   const parserExchangeRate = useCallback((data: ExchangeRateData) => {
     const { success, base, rates } = data;
     success &&
       setExchangeRateData({
-        current: base,
-        rates,
+        currency: base,
+        exchangeRate: rates,
       });
   }, []);
 
   const fetchData = useCallback(
-    async (currency: keyof typeof CURRENCY_ENUM) => {
+    async (currency: Currency) => {
       setIsFetching(true);
       try {
         const { status, data } = await fetchExchangeRete(currency);
-        status === 200 && parserExchangeRate(data);
+        if (status === 200 && data?.rates) parserExchangeRate(data);
+        else throw 0;
       } catch (error) {
         parserExchangeRate(
           await new Promise((resolve) => {
@@ -65,13 +67,11 @@ const useExchangeRate = () => {
   };
 };
 
-export interface ExchangeRateData {
+interface ExchangeRateData {
   success: boolean;
-  base: keyof typeof CURRENCY_ENUM;
+  base: Currency;
   date: string;
-  rates: {
-    [K in keyof typeof CURRENCY_ENUM]?: number;
-  };
+  rates: Todo['exchangeRate'];
 }
 
 export default useExchangeRate;
